@@ -46,7 +46,7 @@ class App():
 
     def load_patterns(self):
         # Load Patterns
-        with open(self.language + ".txt") as file:
+        with open(self.language + "/main.txt") as file:
             raw = list(file)
 
         patterns, commands = {}, []
@@ -197,9 +197,9 @@ class App():
                                 solution.append(" ".join(utterance[i:]))
                             # "V" pattern solution found if known variable
                             elif pattern[i] == "V":
-                                solution.append("_".join(utterance[i:]))
                                 if "_".join(utterance[i:]) not in self.variables:
                                     break
+                                solution.append("_".join(utterance[i:]))
                             # Add solution to solutions
                             if y == "command":
                                 solutions[x] = solution
