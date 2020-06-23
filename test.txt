@@ -1,0 +1,6 @@
+var a is 1, var_i = 1
+var b is two, var_b = "two"
+var c is false, var_c = False
+if c then print a, if X :\n \t print(a)
+if c then print a else print b
+for i in range len b do print a

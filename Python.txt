@@ -1,0 +1,147 @@
+############
+# COMMANDS #
+############
+undo :: command
+redo :: command
+end block :: command
+close block :: command
+add indent :: command
+indent :: command
+replace X with X :: command
+set X as X :: command
+enter :: command
+new line :: command
+comment X :: command
+##########
+# LITERALS
+##########
+in :: in
+and :: and
+or :: or
+not :: not
+pass :: pass
+continue :: continue
+break :: break
+return :: return
+yield :: yield
+def :: def
+is :: is
+true :: True
+false :: False
+equals :: =
+is equal to :: ==
+dot :: .
+comma :: ,
+semicolon :: ;
+colon :: :
+underscore :: _
+open parenthesis :: (
+close parenthesis :: )
+open parentheses :: (
+close parentheses :: )
+open bracket :: [
+close bracket :: ]
+open brackets :: [
+close brackets :: ]
+open brace :: {
+close brace :: }
+open braces :: {
+close braces :: }
+quote :: "
+speech mark :: "
+open quote :: "
+close quote :: "
+start string :: "
+close string :: "
+begin string :: "
+end string :: "
+#################
+# INTERMEDIATES #
+#################
+X then X :: X \nX
+X dot X :: X.X
+X comma X :: X, X
+X plus X :: X + X
+X plus equals X :: X += X
+X add X :: X + X
+X minus X :: X - X
+X take X :: X - X
+X times X :: X * X
+X multiplied by X :: X * X
+X over X :: X / X
+X divided by X :: X / X
+###########
+# BOOLEAN #
+###########
+X is greater than X :: X > X
+X is less than X :: X < X
+X is greater or equal to X :: X >= X
+X is less than or equal to X :: X <= X
+X is not equal to X :: X != X
+X does not equal X :: X != X
+X is equal to X :: X == X
+X and X :: X and X
+X or X :: X or X
+X in X :: X in X
+X not in X :: X not in X
+#####################
+# VARIABLE STATEMENTS
+#####################
+N is X :: N = X
+N equals X :: N = X
+N is a list of X :: N = [ X ]
+N equals true :: N = True
+N equals false :: N = False
+N is true :: N = True
+N is false :: N = False
+###############
+# IF STATEMENTS
+###############
+if :: if <?>: \n \t
+if else :: if <?>:\n \t<?>\n\belse:\n \t
+if X :: if X:\n \t
+if X then X :: if X :\n \t X
+if X then X else :: if X :\n \t X \n\belse: \n
+if X then X else X :: if X :\n \t X \n\belse: \n X
+else X :: \belse: \n \t X
+elif X :: \belif X: \n \t
+elif X then X :: \belif X: \n \t X
+################
+# FOR STATEMENTS
+################
+for N in X :: for N in X : \n \t
+for N in X do X :: for N in X : \n \t X
+for N in V X :: for N in V : \n \t X
+for N in range len V X :: for N in range(len(V)) : \n \t X
+##################
+# WHILE STATEMENTS
+##################
+while X :: while X : \n \t
+while V X :: while V : \n \t X
+while X is true :: while X == True : \n \t
+while X is false :: while X == False : \n \t
+while X equals true :: while X == True : \n \t
+while X equals false :: while X == False : \n \t
+while X is true X :: while X == True : \n \tX
+while X is false X :: while X == False : \n \tX
+while X equals true X :: while X == True : \n \tX
+while X equals false X :: while X == False : \n \tX
+while X V X :: while X V : \n \tX
+while X do X :: while X : \n \t X
+###########
+# FUNCTIONS
+###########
+def N :: def N (<?>): \n \t
+define function N :: def N (<?>): \n \t
+define function N attributes X :: def N ( X ): \n \t
+########
+# PYTHON
+########
+range X :: range(X)
+len X :: len(X)
+print X :: print(X)
+input :: input()
+input X :: input(X)
+input with prompt X :: input(X)
+integer of X :: int(X)
+string of X :: str(X)
