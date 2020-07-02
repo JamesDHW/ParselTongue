@@ -99,13 +99,13 @@ N is false :: N = False
 ###############
 if :: if <?>: \n \t
 if else :: if <?>:\n \t<?>\n\belse:\n \t
-if X :: if X:\n \t
-if X then X :: if X :\n \t X
-if X then X else :: if X :\n \t X \n\belse: \n
-if X then X else X :: if X :\n \t X \n\belse: \n X
+if B :: if X:\n \t
+if B then X :: if X :\n \t X
+if B then X else :: if X :\n \t X \n\belse: \n
+if B then X else X :: if X :\n \t X \n\belse: \n X
 else X :: \belse: \n \t X
-elif X :: \belif X: \n \t
-elif X then X :: \belif X: \n \t X
+elif B :: \belif X: \n \t
+elif B then X :: \belif X: \n \t X
 ################
 # FOR STATEMENTS
 ################
@@ -116,18 +116,18 @@ for N in range len V X :: for N in range(len(V)) : \n \t X
 ##################
 # WHILE STATEMENTS
 ##################
-while X :: while X : \n \t
+while B :: while B : \n \t
 while V X :: while V : \n \t X
-while X is true :: while X == True : \n \t
-while X is false :: while X == False : \n \t
-while X equals true :: while X == True : \n \t
-while X equals false :: while X == False : \n \t
-while X is true X :: while X == True : \n \tX
-while X is false X :: while X == False : \n \tX
-while X equals true X :: while X == True : \n \tX
-while X equals false X :: while X == False : \n \tX
-while X V X :: while X V : \n \tX
-while X do X :: while X : \n \t X
+while V is true :: while X == True : \n \t
+while V is false :: while X == False : \n \t
+while V equals true :: while X == True : \n \t
+while V equals false :: while X == False : \n \t
+while V is true X :: while X == True : \n \tX
+while V is false X :: while X == False : \n \tX
+while V equals true X :: while X == True : \n \tX
+while V equals false X :: while X == False : \n \tX
+#while X V X :: while X V : \n \tX
+while B do X :: while X : \n \t X
 ###########
 # FUNCTIONS
 ###########

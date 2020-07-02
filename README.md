@@ -1,2 +1,2 @@
 # ParselTongue
-Natural Language to Python parser
+Natural Language to code parser

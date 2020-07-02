@@ -18,7 +18,7 @@ class App():
         self.languages = {"Python": ".py", "JavaScript": ".js"}
         self.language = "Python"
         self.indent, self.structure, self.variables = 0, 1, []
-        self.patterns, self.commands = self.load_patterns()  # Patterns
+        self.main_patterns, self.bool_patterns, self.commands = self.load_patterns()  # Patterns
         self.last = ""
 
         # Save field
@@ -45,19 +45,29 @@ class App():
         self.root.mainloop()  # Draw window
 
     def load_patterns(self):
-        # Load Patterns
+        main, bool, commands = {}, {}, []
+
+        # Load main patterns
         with open(self.language + "/main.txt") as file:
             raw = list(file)
+            for i in range(len(raw)):
+                if "#" not in raw[i]:
+                    ls = raw[i].split(" :: ")
+                    if len(ls) == 2:
+                        main[ls[0]] = ls[1].strip("\n")
+                        if ls[1].strip("\n") == 'command':
+                            commands.append(ls[0])
 
-        patterns, commands = {}, []
-        for i in range(len(raw)):
-            if "#" not in raw[i]:
-                ls = raw[i].split(" :: ")
-                if len(ls) == 2:
-                    patterns[ls[0]] = ls[1].strip("\n")
-                    if ls[1].strip("\n") == 'command':
-                        commands.append(ls[0])
-        return patterns, commands
+        # Load boolean interpretations
+        with open(self.language + "/bool.txt") as file:
+            raw = list(file)
+            for i in range(len(raw)):
+                if "#" not in raw[i]:
+                    ls = raw[i].split(" :: ")
+                    if len(ls) == 2:
+                        bool[ls[0]] = ls[1].strip("\n")
+
+        return main, bool, commands
 
     def save_file(self):
         with open(self.save_entry.get(), 'w') as file:
@@ -74,7 +84,7 @@ class App():
 
     def write(self, utterance):
 
-        code = self.interpret(utterance)
+        code = self.interpret(utterance, self.main_patterns)
         if code in ["No Matching Patterns Found!", "COMMAND"]:
             return
 
@@ -117,7 +127,7 @@ class App():
         if command == "redo":
             code = code + self.last
         if command in ["replace X with X", "set X as x"]:
-            code = code.replace("<"+args[0]+">", self.interpret(args[1]), 1)
+            code = code.replace("<"+args[0]+">", self.interpret(args[1], self.main_patterns), 1)
         if command == "comment X":
             code = code + ("\t"*self.indent) + "# " + args[0]
         if command == "new line":
@@ -127,9 +137,9 @@ class App():
         self.code_entry.delete("1.0", "end")
         self.code_entry.insert("1.0", code)
 
-    def interpret(self, utterance):
+    def interpret(self, utterance, patterns):
 
-        pattern = self.match_str(utterance)
+        pattern = self.match_str(utterance, patterns)
 
         # Atomic decisions
         if pattern == "No Matching Patterns Found!":
@@ -151,19 +161,24 @@ class App():
             return str(val)
 
         code = list(pattern.keys())[0]
+        print('pattern', pattern)
         iter = 0
         for element in code:
-            if element.isupper():
-                code = code.replace(element, self.interpret(pattern[list(pattern.keys())[0]][iter]), 1)
+            if element == "B":
+                code = code.replace(element, self.interpret(pattern[list(pattern.keys())[0]][iter], self.bool_patterns), 1)
                 iter += 1
+            elif element.isupper():
+                code = code.replace(element, self.interpret(pattern[list(pattern.keys())[0]][iter], self.main_patterns), 1)
+                iter += 1
+
         self.last = code
         return code
 
-    def match_str(self, utt):
+    def match_str(self, utt, patterns):
         print("#"*25)
         solutions = {}  # Dict of all possible matches
         # For each pattern
-        for x, y in self.patterns.items():
+        for x, y in patterns.items():
             # Key of dict must match utterance
             # Value of key is corresponding code
             pattern = x.split(" ")
