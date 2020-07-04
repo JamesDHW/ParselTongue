@@ -59,36 +59,22 @@ end string :: "
 # INTERMEDIATES #
 #################
 X then X :: X \nX
-X dot X :: X.X
-X comma X :: X, X
-X plus X :: X + X
-X plus equals X :: X += X
-X add X :: X + X
-X minus X :: X - X
-X take X :: X - X
-X times X :: X * X
-X multiplied by X :: X * X
-X over X :: X / X
-X divided by X :: X / X
-###########
-# BOOLEAN #
-###########
-X is greater than X :: X > X
-X is less than X :: X < X
-X is greater or equal to X :: X >= X
-X is less than or equal to X :: X <= X
-X is not equal to X :: X != X
-X does not equal X :: X != X
-X is equal to X :: X == X
-X and X :: X and X
-X or X :: X or X
-X in X :: X in X
-X not in X :: X not in X
+# X dot X :: X.X
+# X comma X :: X, X
+# X plus X :: X + X
+N plus equals X :: N += X
+# X add X :: X + X
+# X minus X :: X - X
+# X take X :: X - X
+# X times X :: X * X
+# X multiplied by X :: X * X
+# X over X :: X / X
+# X divided by X :: X / X
 #####################
 # VARIABLE STATEMENTS
 #####################
-N is X :: N = X
-N equals X :: N = X
+N is V :: N = V
+N equals X :: N = V
 N is a list of X :: N = [ X ]
 N equals true :: N = True
 N equals false :: N = False
@@ -99,8 +85,11 @@ N is false :: N = False
 ###############
 if :: if <?>: \n \t
 if else :: if <?>:\n \t<?>\n\belse:\n \t
-if B :: if X:\n \t
-if B then X :: if X :\n \t X
+if B :: if B:\n \t
+if N :: if N:\n \t
+if B X :: if B:\n \t X
+if B then X :: if V :\n \t X
+if N then X :: if N :\n \t X
 if B then X else :: if X :\n \t X \n\belse: \n
 if B then X else X :: if X :\n \t X \n\belse: \n X
 else X :: \belse: \n \t X
@@ -117,15 +106,16 @@ for N in range len V X :: for N in range(len(V)) : \n \t X
 # WHILE STATEMENTS
 ##################
 while B :: while B : \n \t
-while V X :: while V : \n \t X
-while V is true :: while X == True : \n \t
-while V is false :: while X == False : \n \t
-while V equals true :: while X == True : \n \t
-while V equals false :: while X == False : \n \t
-while V is true X :: while X == True : \n \tX
-while V is false X :: while X == False : \n \tX
-while V equals true X :: while X == True : \n \tX
-while V equals false X :: while X == False : \n \tX
+while B X :: while B : \n \tX
+while N X :: while V : \n \t X
+while N is true :: while X == True : \n \t
+while N is false :: while X == False : \n \t
+while N equals true :: while X == True : \n \t
+while N equals false :: while X == False : \n \t
+while N is true X :: while X == True : \n \tX
+while N is false X :: while X == False : \n \tX
+while N equals true X :: while X == True : \n \tX
+while N equals false X :: while X == False : \n \tX
 #while X V X :: while X V : \n \tX
 while B do X :: while X : \n \t X
 ###########
@@ -138,10 +128,10 @@ define function N attributes X :: def N ( X ): \n \t
 # PYTHON
 ########
 range X :: range(X)
-len X :: len(X)
-print X :: print(X)
+len N :: len(N)
+print V :: print(V)
 input :: input()
-input X :: input(X)
-input with prompt X :: input(X)
+input S :: input(S)
+input with prompt S :: input(S)
 integer of X :: int(X)
 string of X :: str(X)

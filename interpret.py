@@ -1,8 +1,20 @@
 class interpreter:
+    """
+    X - Default/ base interpretation library.
+    B - Boolean statement.
+    N - Variable name (new or existing).
+    V - Value consisting of primitive types and variable names.
+    """
     def __init__(self, lang):
         self.language = lang
         self.patterns, self.commands = self.load_patterns()  # Patterns
-        self.no = 0
+        self.variables = []
+
+        with open(self.language + '/values_default.txt', 'r') as template:
+            lines = list(template.read())
+            with open(self.language + '/values.txt', 'w') as file:
+                for line in lines:
+                    file.write(line)
 
     def load_patterns(self):
         """
@@ -10,7 +22,7 @@ class interpreter:
         Also loads some natural language commands in a list.
         :return: dict of dicts containing { NL_1 : code_snip_1, ... }, [ NL_command_1, ... ]
         """
-        types = {'X': '/main.txt', 'B': '/bool.txt', 'V': '/main.txt'}
+        types = {'X': '/main.txt', 'B': '/bool.txt', 'V': '/values.txt'}
         patterns = {'X': {}, 'B': {}, 'V': {}}
         commands = []
 
@@ -34,50 +46,62 @@ class interpreter:
         :param d_type: Repertoire file used for interpretation of utterance.
         :return: code string corresponding to utterance.
         """
-        print('interpretation', self.no)
-        self.no += 1
+        def interp_value(value):
+            # Could be a combination of known variables, strings, ints, floats
+            if value in self.variables: return value
+            nex = self.interpret(value, 'V')
+            if not nex:
+                try:
+                    if int(value) - float(value) == 0:
+                        return str(int(value))
+                    else:
+                        return str(float(value))
+                except:
+                    return "'" + value + "'"
+            else:
+                return nex
+
+        if d_type == "N":
+            return '_'.join(utterance.split())
+
+        print('interpreting "%s", d_type: %s' % (utterance, d_type))
         pattern = self.match_str(utterance, d_type)  # Find the most specific match with anything else to interpret
 
-        # Atomic decisions
-        if not pattern: # No matching patterns
+        # No matching patterns
+        if not pattern:
             return False
-            # # If the utterance is a known variable name
-            # if "_".join(utterance.split(" ")) in ['self.variables']:
-            #     print("var found")
-            #     return "_".join(utterance.split(" "))
-            # # Else return absolute value
-            # val = "'" + utterance + "'"
-            # try:
-            #     if int(utterance) - float(utterance) == 0:
-            #         val = int(utterance)
-            #     else:
-            #         val = float(utterance)
-            # except:
-            #     pass
-            #
-            # return str(val)
 
         code = list(pattern.keys())[0]  # string of code potentially has some patterns still in e.g. if B : \\n\\tX
         utt = list(pattern.values())[0]  # potential extra bits to interpret
-        interps = [x for x in code.split() if x.isupper()]  # Extra vars to be interpreted
+        interps = [x for x in code if x.isupper()]  # Extra vars to be interpreted
 
-        iter = 0
-        for element in interps:
-            if element.isupper():
-                print(pattern)
-                code = code.replace(element, self.interpret(utt[iter], element), 1)
-                iter += 1
-
-        # self.last = code
+        # Reinterpret other variables
+        for i in range(len(interps)):
+            # New variable name always returns of format 'var_name', also saves new names
+            if interps[i] == 'N':
+                self.variables.append('_'.join(utt[i].split()))
+                code = code.replace('N', '_'.join(utt[i].split()), 1)
+            # String literal
+            elif interps[i] == 'S':
+                code = code.replace('S', "'"+utt[i]+"'", 1)
+            # Value
+            elif interps[i] == 'V':
+                code = code.replace('V', interp_value(utt[i]), 1)
+            else:
+                nex = self.interpret(utt[i], interps[i])
+                if nex:
+                    code = code.replace(interps[i], nex, 1)
+                else:
+                    return False
         return code
 
     def match_str(self, utt, d_type='X'):
         """
-        :param utterance: string of natural language to be matched to a pattern
+        :param utt: string of natural language to be matched to a pattern
         :param d_type: type of utterance (boolean statement/ string?)
         :return: dictionary of {interpreted code : list of variables}
         """
-        print("#" * 50)
+        print("#" * 25, "Matching String:", utt, "#" * 25)
         solutions = {}  # Dict of all possible matches to choose a return value from
         # For each pattern
         for patt, code in self.patterns[d_type].items():
@@ -88,6 +112,7 @@ class interpreter:
             # Quickly remove any impossible matches
             if any(x in pattern for x in utterance) and len(utterance) >= len(pattern):
                 solution_vars = []
+                print("PATTERN:", pattern)
                 # Loop through every literal in the pattern
                 for i in range(len(pattern)):
                     print('break:', i, utterance, pattern)
@@ -108,15 +133,18 @@ class interpreter:
                         # If pattern ends in variable (i + no. of remaining upper-cases)
                         remaining_upp = [x for x in pattern[i:] if x.isupper()]
                         if i + len(remaining_upp) == len(pattern):
-                            print("Ends in variable(s)")
+                            print("Ends in variable(s)", remaining_upp, utterance[i:], solution_vars)
 
                             # Now need to split multiple vars e.g. B X, "'A is True' 'print B'"
                             if len(remaining_upp) > 1:
-                                split = self.split_vars(remaining_upp, utterance[i:])
+                                print("SPLITTING")
+                                split = self.split_vars(remaining_upp.copy(), utterance[i:].copy())
                                 if not split: break
                                 for x, y in split.items():
+                                    print('appending end split:', split[x])
                                     solution_vars.append(split[x])
                             else:
+                                print('appending end join:', " ".join(utterance[i:]))
                                 solution_vars.append(" ".join(utterance[i:]))
 
                             # Add solution to solutions
@@ -133,45 +161,45 @@ class interpreter:
                         caps = [p.pop(i)]  # Delete 'X', reduce list size
                         var = [u.pop(i)]  # Add to this until next literal found
                         no_match = False
+                        single = True
                         length = len(p)
                         while len(u) >= length:
-                            # print(p[i], u[i])
+                            print('p, u', p[i], u[i])
                             if p[i].isupper():  # If next var is also upper
+                                single = False  # Avoids repeating previous utterance words
+                                print('UPPER')
                                 # Multi variable condition
                                 while len(u) >= len(p):
-                                    print('-'*10)
-                                    print(p[i], u[i])
-                                    # print('hey', caps)
-                                    print('both', len(u), length)
                                     if p[i].isupper():
                                         caps.append(p.pop(i))
-                                        print('hey', caps)
                                     if u[i] != p[i]:
+                                        print('not equal', u[i])
                                         var.append(u.pop(i))
-                                        print('hey', u[i], p[i])
-                                        print('both2', len(u), length)
-                                        pattern.pop(i +1)
-                                        utterance.pop(i + 1)  # Also remove extra length from utterance
+                                        pattern.pop(i)
+                                        utterance.pop(i)  # Also remove extra length from utterance
                                     else:
                                         print('heyooo', caps, var)
-                                        split = self.split_vars(caps, var)
+                                        split = self.split_vars(caps.copy(), var.copy())
                                         print('split =', split)
                                         if not split:
                                             no_match = True
                                             var.append(u.pop(i))
                                             continue    # Allows repeated phrases
                                         for x, y in split.items():
+                                            print('appending', split[x])
                                             solution_vars.append(split[x])
+                                        del utterance[i]
+                                        print('remaining u,p', u, p, 'utt, patt', utterance, pattern)
                                         break   # Break if split worked
                             elif u[i] != p[i]:
                                 var.append(u.pop(i))
-                                pattern.pop(i + 1)
                                 utterance.pop(i + 1)  # Also remove extra length from utterance
                             else:
                                 # Found a match
-                                # "X" pattern, solution found
-                                print("found var for ", pattern[i], "-", " ".join(var))
                                 solution_vars.append(" ".join(var))
+                                break
+
+                            if not single:
                                 break
                             # Loop about to be broken with no match found
                             if len(u) < len(p):
@@ -192,14 +220,14 @@ class interpreter:
             return False
         else:
             # print("sorted", sorted(solutions, key=lambda key: len(" ".join(solutions[key])) / len(key)))
-            print("solutions", solutions)
+            # print("solutions", solutions)
 
             # Sort solutions and select the first key and value
             solutions = {k: solutions[k] for k in sorted(solutions, key=lambda key: len(" ".join(solutions[key])) / len(key))}
             code = next(iter(solutions.keys()))
             vars = next(iter(solutions.values()))
 
-            print("solution:", {code: vars})
+            print("match_str solution:", {code: vars})
             return {code: vars}
 
     def split_vars(self, types, utt):
@@ -216,7 +244,7 @@ class interpreter:
             :param utt: list of words to be split up.
             :return: e.g. [ { 'B' : ['', ... , ''] }, { 'X'  : ['', ... , ''] }, ... ]
             """
-            print('splitting', types, utt)
+            print('### splitting', utt, 'into', types, '###')
             solutions = []  # This is to be returned if we're not at max depth
 
             # At max depth check if the full utterance matches that type's interpretation
@@ -230,7 +258,7 @@ class interpreter:
                 # For each word in the utterance
                 for j in range(len(utt)):
                     # If the type is in the ('A') is in every word increasing forwards (e.g. 'A','A','AB')
-                    print('interpreting,', utt[:j + 1], types[i])
+                    # print('interpreting,', utt[:j + 1], types[i])
                     if self.interpret(" ".join(utt[:j + 1]), types[i]):
                         print('nex()', types[i + 1:], utt[j + 1:])
                         nex = split(types[i + 1:], utt[j + 1:])  # Work out next depth
@@ -243,12 +271,12 @@ class interpreter:
                             else:  # At max depth it just returns a dictionary
                                 solutions.append(nex)
                     else:
-                        print('failed')
+                        print('failed split interpretation')
 
             return solutions  # Returns a list of dictionaries from deeper depths
 
         sols = split(types, utt)
-        print('sols:', sols)
+        # print('sols:', sols)
         if len(sols) == 0:
             return False
         elif type(sols) == dict and len(next(iter(sols.values()))) > 0:
@@ -293,9 +321,18 @@ class interpreter:
                     del matching[i + 1]
                     i = 0
 
-        print('matching[0]: ', matching[0])
+        print('FINAL SPLIT:', matching[0])
         return matching[0]
 
 
-interpreter = interpreter('Python')
-print('final matching code:', interpreter.interpret('if a b c then'))
+if __name__ == "__main__":
+
+    interpreter = interpreter('Python')
+    while True:
+        utterance = input("Natural Language to Interpret: ")
+        if utterance == "": break
+        code = interpreter.interpret(utterance)
+        if not code: code = "No Match Found!"
+        print('final matching code:\n' + code)
+
+    print('\nInterpretation Ended')
